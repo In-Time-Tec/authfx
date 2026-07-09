@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@authfx/docs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.3.14",
+  "scripts": {
+    "build": "bun run generate:llms && vite build",
+    "dev": "vite",
+    "generate:llms": "bun --preload ./scripts/raw-plugin.ts scripts/generate-llms.ts",
+    "test": "vitest run --passWithNoTests && bun run check:snippets",
+    "check:snippets": "bun scripts/check-snippets.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@authfx/core": "workspace:*",
+    "@foldkit/ui": "catalog:",
+    "class-variance-authority": "catalog:",
+    "clsx": "catalog:",
+    "effect": "catalog:",
+    "foldkit": "catalog:",
+    "tailwind-merge": "catalog:"
+  },
+  "devDependencies": {
+    "@foldkit/vite-plugin": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "happy-dom": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}
