@@ -3,6 +3,7 @@ import { Url } from "foldkit/url"
 
 import * as Command from "@/components/ui/command"
 import * as Dialog from "@/components/ui/dialog"
+import * as Sheet from "@/components/ui/sheet"
 
 import { SidebarGroups } from "../layout/sidebarStorage"
 import { Route } from "../route/route"
@@ -15,11 +16,11 @@ export const Model = Schema.Struct({
   url: Url,
   searchDialog: Dialog.Model,
   searchCommand: Command.Model,
+  mobileNavigation: Sheet.Model,
   copiedCode: Schema.Option(Schema.String),
   themePreference: ThemePreference,
   maybeActiveSectionId: Schema.Option(Schema.String),
   openSidebarGroups: SidebarGroups,
   isMobileTocOpen: Schema.Boolean,
-  isMobileNavOpen: Schema.Boolean,
 })
 export type Model = typeof Model.Type

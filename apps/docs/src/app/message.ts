@@ -5,6 +5,7 @@ import { Url } from "foldkit/url"
 
 import * as Command from "@/components/ui/command"
 import * as Dialog from "@/components/ui/dialog"
+import * as Sheet from "@/components/ui/sheet"
 
 import { SidebarGroups } from "../layout/sidebarStorage"
 import { ThemePreference } from "./model"
@@ -16,6 +17,7 @@ export const CompletedLoadExternal = m("CompletedLoadExternal")
 export const PressedSearchShortcut = m("PressedSearchShortcut")
 export const GotSearchDialogMessage = m("GotSearchDialogMessage", { message: Dialog.Message })
 export const GotSearchCommandMessage = m("GotSearchCommandMessage", { message: Command.Message })
+export const GotMobileNavigationMessage = m("GotMobileNavigationMessage", { message: Sheet.Message })
 export const ClickedCopyCode = m("ClickedCopyCode", { source: Schema.String })
 export const CompletedCopyCode = m("CompletedCopyCode", { source: Schema.String })
 export const ClearedCopiedCode = m("ClearedCopiedCode", { source: Schema.String })
@@ -30,7 +32,7 @@ export const CompletedSaveSidebarGroups = m("CompletedSaveSidebarGroups")
 export const ChangedActiveSection = m("ChangedActiveSection", { sectionId: Schema.String })
 export const ToggledMobileTableOfContents = m("ToggledMobileTableOfContents", { isOpen: Schema.Boolean })
 export const ClickedMobileTableOfContentsLink = m("ClickedMobileTableOfContentsLink", { sectionId: Schema.String })
-export const ToggledMobileNav = m("ToggledMobileNav", { isOpen: Schema.Boolean })
+export const ClickedMobileNavigationTrigger = m("ClickedMobileNavigationTrigger")
 
 export const Message = Schema.Union([
   ClickedLink,
@@ -40,6 +42,7 @@ export const Message = Schema.Union([
   PressedSearchShortcut,
   GotSearchDialogMessage,
   GotSearchCommandMessage,
+  GotMobileNavigationMessage,
   ClickedCopyCode,
   CompletedCopyCode,
   ClearedCopiedCode,
@@ -54,6 +57,6 @@ export const Message = Schema.Union([
   ChangedActiveSection,
   ToggledMobileTableOfContents,
   ClickedMobileTableOfContentsLink,
-  ToggledMobileNav,
+  ClickedMobileNavigationTrigger,
 ])
 export type Message = typeof Message.Type

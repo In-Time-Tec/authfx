@@ -5,12 +5,14 @@ import { button } from "@/components/ui/button"
 import * as Command from "@/components/ui/command"
 import * as Dialog from "@/components/ui/dialog"
 import { kbd } from "@/components/ui/kbd"
+import * as Sheet from "@/components/ui/sheet"
 
 import {
+  ClickedMobileNavigationTrigger,
+  GotMobileNavigationMessage,
   GotSearchCommandMessage,
   GotSearchDialogMessage,
   PressedSearchShortcut,
-  ToggledMobileNav,
   type Message,
 } from "../app/message"
 import type { Model } from "../app/model"
@@ -18,7 +20,7 @@ import { SearchCommand, searchResultsFor } from "../app/searchPalette"
 import { navGroups, type SearchResult } from "../content/registry"
 import { toPath } from "../route/route"
 import { brandLockup, betaBadge, mark } from "./brand"
-import { close, github, menu, search } from "./icon"
+import { github, menu, search } from "./icon"
 import { themeSelector } from "./themeSelector"
 
 const h = html<Message>()
@@ -90,6 +92,12 @@ const searchPalette = (model: Model): Html => {
         }),
         toParentMessage: (message) => GotSearchCommandMessage({ message }),
       }),
+      results.length === 0
+        ? h.div(
+            [h.Role("status"), h.AriaLive("polite"), h.Class("px-4 py-10 text-center text-sm text-muted-foreground")],
+            [`No results for “${model.searchCommand.inputValue}”`],
+          )
+        : h.empty,
     ]),
     toParentMessage: (message) => GotSearchDialogMessage({ message }),
   })
@@ -112,14 +120,14 @@ const header = (model: Model): Html =>
       h.div(
         [h.Class("mx-auto flex h-full w-full max-w-7xl items-center gap-3 px-4 sm:px-6")],
         [
-          h.button(
-            [
-              h.AriaLabel("Open navigation"),
-              h.OnClick(ToggledMobileNav({ isOpen: true })),
-              h.Class(
-                "cursor-pointer rounded-md p-2 text-gray-700 transition hover:bg-gray-100 md:hidden dark:text-gray-300 dark:hover:bg-gray-800",
-              ),
-            ],
+          button(
+            {
+              variant: "ghost",
+              size: "icon",
+              onClick: ClickedMobileNavigationTrigger(),
+              class: "md:hidden",
+              attributes: [h.AriaLabel("Open navigation")],
+            },
             [menu("size-5")],
           ),
           brandLockup(),
@@ -182,80 +190,73 @@ const footer = (): Html =>
   )
 
 const mobileNavDrawer = (model: Model): Html => {
-  if (!model.isMobileNavOpen) return h.empty
   const path = toPath(model.route)
-  return h.div(
-    [h.Class("fixed inset-0 z-50 flex flex-col bg-cream md:hidden dark:bg-gray-900")],
-    [
-      h.div(
-        [
-          h.Class(
-            "flex h-[var(--header-height)] shrink-0 items-center justify-between border-b border-gray-300 px-4 dark:border-gray-800",
-          ),
-        ],
-        [
+  return h.submodel({
+    slotId: model.mobileNavigation.id,
+    model: model.mobileNavigation,
+    view: Sheet.view,
+    viewInputs: Sheet.content(
+      {
+        side: "left",
+        class: "w-[min(22rem,calc(100%-2rem))] gap-0",
+      },
+      () => [
+        Sheet.header({ class: "border-b pr-14" }, [
           h.div(
             [h.Class("flex items-center gap-2")],
             [
               mark("size-6"),
-              h.span([h.Class("text-lg font-medium tracking-tight text-gray-900 dark:text-white")], ["Authfx"]),
+              Sheet.title({ model: model.mobileNavigation, class: "text-lg tracking-tight" }, ["Authfx"]),
               betaBadge(),
             ],
           ),
-          h.button(
-            [
-              h.AriaLabel("Close navigation"),
-              h.OnClick(ToggledMobileNav({ isOpen: false })),
-              h.Class(
-                "cursor-pointer rounded-md p-2 text-gray-700 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
-              ),
-            ],
-            [close("size-6")],
-          ),
-        ],
-      ),
-      h.nav(
-        [h.AriaLabel("Documentation"), h.Class("flex-1 overflow-y-auto px-4 py-4")],
-        navGroups.map((group) =>
-          h.div(
-            [h.Class("mb-4")],
-            [
-              h.p(
-                [h.Class("mb-1 px-2 text-xs font-semibold tracking-wider text-gray-600 uppercase dark:text-gray-400")],
-                [group.title],
-              ),
-              h.ul(
-                [h.Class("space-y-0.5")],
-                group.pages.map((page) =>
-                  h.li(
-                    [],
-                    [
-                      h.a(
-                        [
-                          h.Href(page.path),
-                          ...(path === page.path ? [h.AriaCurrent("page")] : []),
-                          h.Class(
-                            path === page.path
-                              ? "block rounded-md bg-accent-100 px-2.5 py-2 text-sm text-accent-700 dark:bg-accent-900/50 dark:text-accent-400"
-                              : "block rounded-md px-2.5 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
-                          ),
-                        ],
-                        [page.navTitle],
-                      ),
-                    ],
+          Sheet.description({ model: model.mobileNavigation, class: "sr-only" }, ["Browse the Authfx documentation."]),
+        ]),
+        h.nav(
+          [h.AriaLabel("Documentation"), h.Class("flex-1 overflow-y-auto px-4 py-4")],
+          navGroups.map((group) =>
+            h.div(
+              [h.Class("mb-4")],
+              [
+                h.p(
+                  [h.Class("mb-1 px-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase")],
+                  [group.title],
+                ),
+                h.ul(
+                  [h.Class("space-y-0.5")],
+                  group.pages.map((page) =>
+                    h.li(
+                      [],
+                      [
+                        h.a(
+                          [
+                            h.Href(page.path),
+                            ...(path === page.path ? [h.AriaCurrent("page")] : []),
+                            h.Class(
+                              path === page.path
+                                ? "block rounded-md bg-accent px-2.5 py-2 text-sm text-accent-foreground"
+                                : "block rounded-md px-2.5 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                            ),
+                          ],
+                          [page.navTitle],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-      h.div(
-        [h.Class("flex shrink-0 items-center justify-center border-t border-gray-300 p-4 dark:border-gray-800")],
-        [githubLink("inline-flex size-10 items-center justify-center rounded-md text-gray-700 dark:text-gray-300")],
-      ),
-    ],
-  )
+        Sheet.footer({ class: "items-center border-t" }, [
+          githubLink(
+            "inline-flex size-10 items-center justify-center rounded-md text-muted-foreground hover:bg-accent",
+          ),
+        ]),
+      ],
+    ),
+    toParentMessage: (message) => GotMobileNavigationMessage({ message }),
+  })
 }
 
 export const shell = (model: Model, content: Html): Html =>

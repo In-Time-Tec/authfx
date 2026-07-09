@@ -3,6 +3,7 @@ import { Runtime } from "foldkit"
 import { Url } from "foldkit/url"
 
 import * as Dialog from "@/components/ui/dialog"
+import * as Sheet from "@/components/ui/sheet"
 
 import { legacyRedirects } from "../content/registry"
 import { toPath, urlToRoute } from "../route/route"
@@ -24,12 +25,12 @@ export const init: Runtime.RoutingApplicationInit<Model, Message> = (url: Url) =
         focusSelector: '[data-slot="command-input"]',
       }),
       searchCommand: initialSearchCommand(),
+      mobileNavigation: Sheet.init({ id: "mobile-navigation", isAnimated: true }),
       copiedCode: Option.none(),
       themePreference: "System",
       maybeActiveSectionId: Option.none(),
       openSidebarGroups: {},
       isMobileTocOpen: false,
-      isMobileNavOpen: false,
     },
     [
       LoadThemePreference(),

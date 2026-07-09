@@ -5,6 +5,7 @@ import { evo } from "foldkit/struct"
 import { toString } from "foldkit/url"
 
 import * as Dialog from "@/components/ui/dialog"
+import * as Sheet from "@/components/ui/sheet"
 
 import { legacyRedirects } from "../content/registry"
 import { isSidebarGroupOpen, readSidebarGroups, writeSidebarGroups, SidebarGroups } from "../layout/sidebarStorage"
@@ -17,6 +18,7 @@ import {
   CompletedNavigateInternal,
   CompletedSaveSidebarGroups,
   CompletedSaveThemePreference,
+  GotMobileNavigationMessage,
   GotSearchCommandMessage,
   GotSearchDialogMessage,
   GotSidebarGroups,
@@ -46,15 +48,18 @@ export const update = (model: Model, message: Message): Update =>
         if (redirectTarget !== undefined) {
           return [model, [RedirectLegacy({ url: redirectTarget })]]
         }
+        const [nextMobileNavigation, mobileNavigationCommands] = Sheet.close(model.mobileNavigation)
         return [
           evo(model, {
             route: () => route,
             url: () => url,
-            isMobileNavOpen: () => false,
+            mobileNavigation: () => nextMobileNavigation,
             isMobileTocOpen: () => false,
             maybeActiveSectionId: () => Option.none(),
           }),
-          [],
+          mapMessages(mobileNavigationCommands, (childMessage) =>
+            GotMobileNavigationMessage({ message: childMessage }),
+          ),
         ]
       },
       PressedSearchShortcut: () => {
@@ -122,6 +127,27 @@ export const update = (model: Model, message: Message): Update =>
           },
         })
       },
+      ClickedMobileNavigationTrigger: () => {
+        const [nextMobileNavigation, mobileNavigationCommands] = Sheet.open(model.mobileNavigation)
+        return [
+          evo(model, { mobileNavigation: () => nextMobileNavigation }),
+          mapMessages(mobileNavigationCommands, (childMessage) =>
+            GotMobileNavigationMessage({ message: childMessage }),
+          ),
+        ]
+      },
+      GotMobileNavigationMessage: ({ message: mobileNavigationMessage }) => {
+        const [nextMobileNavigation, mobileNavigationCommands] = Sheet.update(
+          model.mobileNavigation,
+          mobileNavigationMessage,
+        )
+        return [
+          evo(model, { mobileNavigation: () => nextMobileNavigation }),
+          mapMessages(mobileNavigationCommands, (childMessage) =>
+            GotMobileNavigationMessage({ message: childMessage }),
+          ),
+        ]
+      },
       ClickedCopyCode: ({ source }) => [evo(model, { copiedCode: () => Option.some(source) }), [CopyCode({ source })]],
       CompletedCopyCode: ({ source }) => [model, [ScheduleClearCopiedCode({ source })]],
       ClearedCopiedCode: ({ source }) => [
@@ -154,7 +180,6 @@ export const update = (model: Model, message: Message): Update =>
         }),
         [],
       ],
-      ToggledMobileNav: ({ isOpen }) => [evo(model, { isMobileNavOpen: () => isOpen }), []],
       CompletedApplyTheme: () => [model, []],
       CompletedSaveThemePreference: () => [model, []],
       CompletedSaveSidebarGroups: () => [model, []],
